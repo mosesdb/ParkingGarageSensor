@@ -1,0 +1,61 @@
+#include <LiquidCrystal_I2C.h> // Library for LCD
+LiquidCrystal_I2C lcd = LiquidCrystal_I2C(0x27, 16, 2);
+
+// constants won't change
+const int TRIG_PIN = 6; // Arduino pin connected to Ultrasonic Sensor's TRIG pin
+const int ECHO_PIN = 7; // Arduino pin connected to Ultrasonic Sensor's ECHO pin
+const int DISTANCE_THRESHOLD = 20; // centimeters
+int redPin=11;  //Arduino pin for Red LED
+int greenPin=10;  // Arduino pin for Green LED
+int bluePin=9;  // Arduino pin for Blue LED
+
+// variables will change:
+float duration_us, distance_cm;
+
+void setup() {
+  Serial.begin (9600);       // Initialize serial port
+  pinMode(TRIG_PIN, OUTPUT); // Set arduino pin to output mode
+  pinMode(ECHO_PIN, INPUT);  // Set arduino pin to input mode
+  pinMode(redPin,OUTPUT);    // Set arduino pin to output mode
+  pinMode(greenPin,OUTPUT);  // Set arduino pin to output mode
+  pinMode(bluePin,OUTPUT);   // Set arduino pin to output mode
+  lcd.init();                //Turns on LCD
+  lcd.backlight();           //Turns on LCD Backlight
+}
+
+void loop() {
+                             // generate 10-microsecond pulse to TRIG pin
+  digitalWrite(TRIG_PIN, HIGH);
+  delayMicroseconds(1);
+  digitalWrite(TRIG_PIN, LOW);
+
+                             // measure duration of pulse from ECHO pin
+  duration_us = pulseIn(ECHO_PIN, HIGH);
+  // calculate the distance
+  distance_cm = 0.017 * duration_us;
+
+  if(distance_cm <= DISTANCE_THRESHOLD) // If distance is less than x, turn LED to red
+    analogWrite(redPin,255);
+   else
+    analogWrite(redPin,0);
+
+  if(distance_cm >= DISTANCE_THRESHOLD) // If distance is more than x, turn LED to green
+    analogWrite(greenPin,255);
+   else
+    analogWrite(greenPin,0);
+    
+  if(distance_cm <= DISTANCE_THRESHOLD){ // If distance is less than x, display "CLOSED" on LCD
+    lcd.setCursor(5, 0);
+    lcd.print("CLOSED");}
+  else{
+    lcd.clear();
+    lcd.setCursor(5,0);
+    lcd.print("OPEN");}
+
+  // print the value to Serial Monitor
+  Serial.print("distance: ");
+  Serial.print(distance_cm);
+  Serial.println(" cm");
+
+  delay(500);
+}
